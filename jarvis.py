@@ -1,6 +1,7 @@
 import openai
 from config import OPENAI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS
 from trading_analyzer import TradingAnalyzer
+from tradingview_analyzer import TradingViewAnalyzer
 from geopolitical_monitor import GeopoliticalMonitor
 from pc_controller import PCController
 import json
@@ -12,6 +13,7 @@ class JarvisAI:
     
     def __init__(self):
         self.trading_analyzer = TradingAnalyzer()
+        self.tradingview_analyzer = TradingViewAnalyzer()
         self.geopolitical_monitor = GeopoliticalMonitor()
         self.pc_controller = PCController()
         self.conversation_history = []
@@ -20,18 +22,22 @@ class JarvisAI:
         
 Your capabilities:
 1. Forex Trading Analysis - Analyze charts, provide trading signals, manage risk
-2. Geopolitical Monitoring - Track global events affecting forex markets
-3. PC Control - Execute system commands and control computer operations
-4. Market Intelligence - Provide real-time insights and recommendations
+2. TradingView Chart Analysis - Multi-timeframe analysis, support/resistance, candlestick patterns
+3. Geopolitical Monitoring - Track global events affecting forex markets
+4. PC Control - Execute system commands and control computer operations
+5. Market Intelligence - Provide real-time insights and recommendations
 
 You are sophisticated, professional, witty, and always put the user's interests first.
 When analyzing trades, always prioritize risk management.
 Provide clear reasoning for all recommendations.
 Use technical indicators and geopolitical data to support decisions.
+Analyze TradingView-style charts with support/resistance levels and candlestick patterns.
 
 Available functions:
 - analyze_forex_pair(pair): Analyze a specific forex pair
 - analyze_all_pairs(): Get signals for all configured pairs
+- analyze_tradingview_chart(symbol, timeframe): Analyze TradingView chart (1h, 4h, 1d, 1w)
+- multi_timeframe_analysis(symbol): Multi-timeframe analysis like TradingView
 - get_geopolitical_summary(): Get latest geopolitical news and impact
 - execute_pc_command(command_type, params): Control PC operations
 """
@@ -83,6 +89,38 @@ Available functions:
                 "parameters": {
                     "type": "object",
                     "properties": {}
+                }
+            },
+            {
+                "name": "analyze_tradingview_chart",
+                "description": "Analyze TradingView chart with indicators, patterns, support/resistance",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "symbol": {
+                            "type": "string",
+                            "description": "Forex pair symbol (e.g., EUR_USD, EURUSD)"
+                        },
+                        "timeframe": {
+                            "type": "string",
+                            "description": "Timeframe (1m, 5m, 15m, 1h, 4h, 1d, 1w, 1M). Default: 1h"
+                        }
+                    },
+                    "required": ["symbol"]
+                }
+            },
+            {
+                "name": "multi_timeframe_analysis",
+                "description": "Analyze forex pair on multiple timeframes (1h, 4h, 1d, 1w) like TradingView",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "symbol": {
+                            "type": "string",
+                            "description": "Forex pair symbol (e.g., EUR_USD, EURUSD)"
+                        }
+                    },
+                    "required": ["symbol"]
                 }
             },
             {
@@ -180,6 +218,15 @@ Available functions:
             
             elif function_name == "analyze_all_pairs":
                 return self.trading_analyzer.analyze_all_pairs()
+            
+            elif function_name == "analyze_tradingview_chart":
+                symbol = function_args.get("symbol")
+                timeframe = function_args.get("timeframe", "1h")
+                return self.tradingview_analyzer.analyze_tradingview_chart(symbol, timeframe)
+            
+            elif function_name == "multi_timeframe_analysis":
+                symbol = function_args.get("symbol")
+                return self.tradingview_analyzer.multi_timeframe_analysis(symbol)
             
             elif function_name == "get_geopolitical_summary":
                 return self.geopolitical_monitor.get_geopolitical_summary()
